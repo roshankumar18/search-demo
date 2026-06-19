@@ -1,4 +1,4 @@
-import { apiUrl } from "./config";
+import { apiUrl, apiFetchHeaders } from "./config";
 import { resolveBrandId } from "./brand-id";
 import type {
   CatalogSearchRequest,
@@ -23,10 +23,10 @@ export async function searchCatalog(
 
   const response = await fetch(apiUrl("/api/catalog-search"), {
     method: "POST",
-    headers: {
+    headers: apiFetchHeaders({
       "Content-Type": "application/json",
       brandid: brandId,
-    },
+    }),
     body: JSON.stringify({
       query: input.query,
       limit: input.limit ?? 24,
@@ -55,15 +55,13 @@ export async function searchLegacyProducts(input: {
     query: input.query,
     limit: String(input.limit ?? 24),
     offset: String(input.offset ?? 0),
+    brandid: brandId,
   });
 
+  // brandid in query — avoids extra preflight header; ngrok skip added when needed
   const response = await fetch(
     apiUrl(`/api/search/products?${params.toString()}`),
-    {
-      headers: {
-        brandid: brandId,
-      },
-    }
+    { headers: apiFetchHeaders() }
   );
 
   const data = (await response.json()) as LegacySearchResponse & {
