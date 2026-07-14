@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { searchCatalog, searchLegacyProducts } from "../lib/api";
 import { mapLegacyProducts } from "../lib/map-legacy-product";
+import {
+  enrichCatalogResults,
+  fetchProductsByHandles,
+} from "../lib/storefront";
 import type { CatalogSearchResponse } from "../types/catalog-search";
 import type { LegacySearchResponse } from "../types/legacy-search";
 
@@ -55,8 +59,17 @@ export function useCompareSearch(options?: UseCompareSearchOptions) {
       }
 
       if (catalogResult.status === "fulfilled") {
+        const base = catalogResult.value;
+        const handles = base.results.map((p) => p.handle);
+        const enriched = await fetchProductsByHandles(handles);
+        if (id !== requestId.current) {
+          return;
+        }
         setCatalog({
-          data: catalogResult.value,
+          data: {
+            ...base,
+            results: enrichCatalogResults(base.results, enriched),
+          },
           loading: false,
           error: null,
         });
