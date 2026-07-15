@@ -9,3 +9,22 @@ body {
   @apply min-h-screen bg-stone-50 text-stone-900 antialiased;
   font-family: var(--font-sans);
 }
+
+/* Slim scrollbar for horizontal product rows */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme(--color-stone-300) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: theme(--color-stone-300);
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: theme(--color-stone-400);
+}

@@ -73,9 +73,11 @@ export function ResultsGrid({ results, buckets }: ResultsGridProps) {
               </span>
             </h2>
           ) : null}
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mb-4 scrollbar-thin">
             {section.products.map((product) => (
-              <ProductCard key={product.handle} product={product} />
+              <div key={product.handle} className="w-[260px] flex-shrink-0 snap-start">
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         </section>

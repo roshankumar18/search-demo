@@ -35,12 +35,17 @@ interface ShopifyProductJs {
 }
 
 function mapShopifyProduct(p: ShopifyProductJs): CatalogSearchProduct {
+  let image = p.featured_image ?? undefined;
+  if (image && image.startsWith("//")) {
+    image = `https:${image}`;
+  }
+
   return {
     handle: p.handle,
     title: p.title,
     description: p.description ?? undefined,
     productType: p.type ?? undefined,
-    image: p.featured_image ?? undefined,
+    image,
     availableForSale: p.available,
     prices: {
       min: fromPaise(p.price_min),
@@ -147,6 +152,7 @@ export function enrichCatalogResults(
     return {
       ...e,
       // preserve catalog-only fields not returned by Shopify
+      image: e.image ?? product.image,
       subcategory: product.subcategory ?? e.subcategory,
       bucket: product.bucket,
       prices: {
