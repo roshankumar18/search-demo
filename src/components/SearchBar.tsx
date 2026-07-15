@@ -6,14 +6,6 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-const SUGGESTIONS = [
-  "festive outfit under 2000",
-  "diwali outfit",
-  "office kurta",
-  "wedding guest lehenga",
-  "dry skin moisturizer",
-];
-
 export function SearchBar({
   value,
   onChange,
@@ -65,19 +57,6 @@ export function SearchBar({
           Search
         </button>
       </form>
-
-      <div className="flex flex-wrap gap-2">
-        {SUGGESTIONS.map((suggestion) => (
-          <button
-            key={suggestion}
-            type="button"
-            onClick={() => onChange(suggestion)}
-            className="rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-600 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900"
-          >
-            {suggestion}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

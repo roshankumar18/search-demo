@@ -1,7 +1,6 @@
 import { SearchBar } from "./components/SearchBar";
 import { ResultsGrid } from "./components/ResultsGrid";
 import { SearchMeta } from "./components/SearchMeta";
-import { LegacySearchSummary } from "./components/LegacySearchSummary";
 import { useBrandId } from "./hooks/useBrandId";
 import { useCompareSearch } from "./hooks/useCompareSearch";
 
@@ -19,15 +18,13 @@ function App() {
     query,
     setQuery,
     catalog,
-    legacy,
-    legacyProducts,
     loading,
     searchNow,
   } = useCompareSearch();
 
   const hasQuery = query.trim().length > 0;
   const showEmptyState =
-    !loading && !hasQuery && !catalog.data && !legacy.data;
+    !loading && !hasQuery && !catalog.data;
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#fff7ed_0%,_#fafaf9_45%,_#f5f5f4_100%)]">
@@ -42,7 +39,7 @@ function App() {
                 Search Compare
               </h1>
               <p className="mt-1 text-sm text-stone-500">
-                Catalog search vs legacy Meilisearch · side by side
+                Search the catalog using natural language
               </p>
             </div>
             <div className="rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-xs text-stone-600">
@@ -73,19 +70,18 @@ function App() {
         {showEmptyState ? (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white/60 px-6 py-20 text-center">
             <p className="font-display text-2xl font-semibold text-stone-800">
-              Start typing to compare
+              Start typing to search
             </p>
             <p className="mt-2 text-stone-500">
-              One query hits both APIs — catalog search on the left, legacy on the
-              right.
+              Enter a query to find relevant products.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+          <div className="mx-auto max-w-4xl">
             <section className="min-w-0">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h2 className="font-display text-xl font-semibold text-stone-900">
-                  Catalog Search
+                  Search Results
                 </h2>
                 <span className="text-xs text-stone-500">POST /api/catalog-search</span>
               </div>
@@ -111,39 +107,6 @@ function App() {
                   buckets={catalog.data.meta?.buckets}
                 />
               ) : !catalog.loading && hasQuery && !catalog.error ? (
-                <ResultsGrid results={[]} />
-              ) : null}
-            </section>
-
-            <section className="min-w-0">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <h2 className="font-display text-xl font-semibold text-stone-900">
-                  Legacy Search
-                </h2>
-                <span className="text-xs text-stone-500">
-                  GET /api/search/products
-                </span>
-              </div>
-
-              {legacy.error ? <ColumnError message={legacy.error} /> : null}
-
-              {legacy.data ? (
-                <div className="mb-6">
-                  <LegacySearchSummary
-                    total={legacy.data.total}
-                    resultCount={legacyProducts.length}
-                    filters={legacy.data.result.filters}
-                  />
-                </div>
-              ) : legacy.loading ? (
-                <div className="mb-6 rounded-2xl border border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-500">
-                  Loading legacy results…
-                </div>
-              ) : null}
-
-              {legacy.data ? (
-                <ResultsGrid results={legacyProducts} />
-              ) : !legacy.loading && hasQuery && !legacy.error ? (
                 <ResultsGrid results={[]} />
               ) : null}
             </section>

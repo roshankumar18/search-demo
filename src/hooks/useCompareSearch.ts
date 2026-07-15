@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { searchCatalog, searchLegacyProducts } from "../lib/api";
-import { mapLegacyProducts } from "../lib/map-legacy-product";
+import { searchCatalog } from "../lib/api";
 import {
   enrichCatalogResults,
   fetchProductsByHandles,
 } from "../lib/storefront";
 import type { CatalogSearchResponse } from "../types/catalog-search";
-import type { LegacySearchResponse } from "../types/legacy-search";
 
 interface UseCompareSearchOptions {
   debounceMs?: number;
@@ -29,11 +27,7 @@ export function useCompareSearch(options?: UseCompareSearchOptions) {
     loading: false,
     error: null,
   });
-  const [legacy, setLegacy] = useState<SearchSideState<LegacySearchResponse>>({
-    data: null,
-    loading: false,
-    error: null,
-  });
+
   const requestId = useRef(0);
 
   const runSearch = useCallback(
@@ -41,63 +35,35 @@ export function useCompareSearch(options?: UseCompareSearchOptions) {
       const trimmed = searchQuery.trim();
       if (!trimmed) {
         setCatalog({ data: null, loading: false, error: null });
-        setLegacy({ data: null, loading: false, error: null });
         return;
       }
 
       const id = ++requestId.current;
       setCatalog((prev) => ({ ...prev, loading: true, error: null }));
-      setLegacy((prev) => ({ ...prev, loading: true, error: null }));
 
-      const [catalogResult, legacyResult] = await Promise.allSettled([
-        searchCatalog({ query: trimmed, limit }),
-        searchLegacyProducts({ query: trimmed, limit }),
-      ]);
+      try {
+        const catalogResult = await searchCatalog({ query: trimmed, limit });
+        if (id !== requestId.current) return;
 
-      if (id !== requestId.current) {
-        return;
-      }
-
-      if (catalogResult.status === "fulfilled") {
-        const base = catalogResult.value;
-        const handles = base.results.map((p) => p.handle);
+        const handles = catalogResult.results.map((p) => p.handle);
         const enriched = await fetchProductsByHandles(handles);
-        if (id !== requestId.current) {
-          return;
-        }
+        if (id !== requestId.current) return;
+
         setCatalog({
           data: {
-            ...base,
-            results: enrichCatalogResults(base.results, enriched),
+            ...catalogResult,
+            results: enrichCatalogResults(catalogResult.results, enriched),
           },
           loading: false,
           error: null,
         });
-      } else {
+      } catch (error) {
+        if (id !== requestId.current) return;
+
         setCatalog({
           data: null,
           loading: false,
-          error:
-            catalogResult.reason instanceof Error
-              ? catalogResult.reason.message
-              : "Catalog search failed",
-        });
-      }
-
-      if (legacyResult.status === "fulfilled") {
-        setLegacy({
-          data: legacyResult.value,
-          loading: false,
-          error: null,
-        });
-      } else {
-        setLegacy({
-          data: null,
-          loading: false,
-          error:
-            legacyResult.reason instanceof Error
-              ? legacyResult.reason.message
-              : "Legacy search failed",
+          error: error instanceof Error ? error.message : "Catalog search failed",
         });
       }
     },
@@ -116,17 +82,11 @@ export function useCompareSearch(options?: UseCompareSearchOptions) {
     void runSearch(query);
   }, [query, runSearch]);
 
-  const legacyProducts = legacy.data?.result.products
-    ? mapLegacyProducts(legacy.data.result.products)
-    : [];
-
   return {
     query,
     setQuery,
     catalog,
-    legacy,
-    legacyProducts,
-    loading: catalog.loading || legacy.loading,
+    loading: catalog.loading,
     searchNow,
   };
 }
