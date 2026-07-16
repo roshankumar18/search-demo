@@ -1,6 +1,6 @@
 import { SearchBar } from "./components/SearchBar";
 import { ResultsGrid } from "./components/ResultsGrid";
-import { SearchMeta } from "./components/SearchMeta";
+
 import { useBrandId } from "./hooks/useBrandId";
 import { useCompareSearch } from "./hooks/useCompareSearch";
 
@@ -88,14 +88,7 @@ function App() {
 
               {catalog.error ? <ColumnError message={catalog.error} /> : null}
 
-              {catalog.data?.meta ? (
-                <div className="mb-6">
-                  <SearchMeta
-                    meta={catalog.data.meta}
-                    total={catalog.data.estimatedTotalHits}
-                  />
-                </div>
-              ) : catalog.loading ? (
+              {catalog.loading ? (
                 <div className="mb-6 rounded-2xl border border-stone-200 bg-white px-4 py-8 text-center text-sm text-stone-500">
                   Loading catalog results…
                 </div>
